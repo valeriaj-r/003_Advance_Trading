@@ -31,9 +31,9 @@ This project implements a market-neutral pairs trading strategy that:
 
 ## Installation
 
-bash
+```bash
 pip install -r requirements.txt
-
+```
 
 ## Requirements
 
@@ -46,7 +46,7 @@ pip install -r requirements.txt
 
 ## Project Structure
 
-
+```
 pairs_trading/
 ├── requirements.txt       # Dependencies
 ├── README.md             # This file
@@ -57,7 +57,7 @@ pairs_trading/
 ├── backtesting.py        # Strategy execution with costs
 ├── visualizations.py     # Performance visualizations
 └── main.py               # Main orchestrator
-
+```
 
 ## Usage
 
@@ -165,3 +165,4 @@ Jimena Argüelles Perez
 ## License
 
 Educational project - use at your own risk
+
