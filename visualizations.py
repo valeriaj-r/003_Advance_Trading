@@ -147,6 +147,24 @@ def plot_spread_evolution(dates, spread_history, positions_history, ticker_A, ti
 
     return fig
 
+
+def plot_hedge_ratio(dates, beta_history, ticker_A, ticker_B):
+    """Plot hedge ratio (beta) evolution over time"""
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    ax.plot(dates, beta_history, label='Hedge Ratio (β)', color='blue', linewidth=1.5)
+    ax.set_xlabel('Date', fontsize=12)
+    ax.set_ylabel('Hedge Ratio (β)', fontsize=12)
+    ax.set_title(f'Dynamic Hedge Ratio: {ticker_A} vs {ticker_B}', fontsize=14, fontweight='bold')
+    ax.legend(loc='best')
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    return fig
+
+
+
+
 def plot_portfolio_value(dates, portfolio_values, period_name, initial_capital):
     """Plot portfolio value over time"""
     fig, ax = plt.subplots(figsize=(14, 6))
@@ -201,6 +219,34 @@ def print_performance_metrics(results, period_name):
     print(f"{'=' * 60}\n")
 
 
+def plot_trade_statistics(trades):
+    """Plot trade-level statistics"""
+    if len(trades) == 0:
+        print("No trades to analyze")
+        return None
+
+    # Extract trade returns
+    trade_returns = [t['pnl_pct'] for t in trades if t['type'] == 'EXIT']
+
+    if len(trade_returns) == 0:
+        print("No completed trades to analyze")
+        return None
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Trade returns distribution
+    ax1.hist(trade_returns, bins=20, color='purple', edgecolor='black', alpha=0.7)
+    ax1.axvline(x=0, color='red', linestyle='--', linewidth=2)
+    ax1.axvline(x=np.mean(trade_returns), color='green', linestyle='--', linewidth=2,
+                label=f'Mean: {np.mean(trade_returns) * 100:.2f}%')
+    ax1.set_xlabel('Return per Trade (%)', fontsize=12)
+    ax1.set_ylabel('Frequency', fontsize=12)
+    ax1.set_title('Distribution of Returns per Trade', fontsize=14, fontweight='bold')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    return fig
 
 
 def visualize_results(results, data, ticker_A, ticker_B, period_name, initial_capital,
@@ -254,11 +300,20 @@ def visualize_results(results, data, ticker_A, ticker_B, period_name, initial_ca
                           positions_to_plot, ticker_A, ticker_B)
     plt.show()
 
+    # Plot hedge ratio
+    plot_hedge_ratio(dates, beta_to_plot, ticker_A, ticker_B)
+    plt.show()
+
 
     # Plot portfolio value
     plot_portfolio_value(dates, results['portfolio_values'], period_name, initial_capital)
     plt.show()
 
+    # Plot trade statistics
+    if len(results['trades']) > 0:
+        fig = plot_trade_statistics(results['trades'])
+        if fig:
+            plt.show()
 
 
 if __name__ == "__main__":
