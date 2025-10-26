@@ -1,118 +1,106 @@
 """
-Cointegration Testing Module
-Identifies cointegrated pairs using Engle-Granger methodology
+Cointegration module: Find cointegrated pairs within sectors
 """
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
+from itertools import combinations
+from config import COINTEGRATION_ALPHA, USE_LOG_PRICES, SECTORS
 
 
-class CointegrationTester:
-    """Tests for cointegration between asset pairs"""
+def test_cointegration(s1, s2, use_log=USE_LOG_PRICES, alpha=COINTEGRATION_ALPHA):
+    """
+    Test if two series are cointegrated using Engle-Granger method
+    Returns dict with test results and OLS parameters
+    """
+    # Use log prices if specified
+    if use_log:
+        s1 = np.log(s1)
+        s2 = np.log(s2)
 
-    def __init__(self, use_log=True, alpha=0.05):
-        """
-        Args:
-            use_log: Use log prices (recommended for financial data)
-            alpha: Significance level for statistical tests
-        """
-        self.use_log = use_log
-        self.alpha = alpha
+    # Test 1: Both series should be non-stationary (ADF p > alpha)
+    p1 = adfuller(s1.values, regression="c", autolag="AIC")[1]
+    p2 = adfuller(s2.values, regression="c", autolag="AIC")[1]
 
-    def test_pair(self, prices: pd.DataFrame):
-        """
-        Test if two assets are cointegrated using Engle-Granger method
+    # Test 2: OLS regression and test residuals for stationarity
+    X = sm.add_constant(s2.values)
+    model = sm.OLS(s1.values, X).fit()
+    w0, w1 = model.params
+    residuals = s1.values - (w0 + w1 * s2.values)
 
-        Args:
-            prices: DataFrame with exactly 2 columns (asset prices)
+    # ADF test on residuals (should be stationary, p < alpha)
+    p_res = adfuller(residuals, regression="n", autolag="AIC")[1]
 
-        Returns:
-            dict with test results and OLS parameters
-        """
-        if prices.shape[1] != 2:
-            raise ValueError("DataFrame must have exactly 2 columns")
+    # Check cointegration conditions
+    cond_nonstat = (p1 > alpha) and (p2 > alpha)
+    cond_res_stat = (p_res < alpha)
+    is_cointegrated = cond_nonstat and cond_res_stat
 
-        col1, col2 = prices.columns.tolist()
-        df = prices.dropna().copy()
+    return {
+        "is_cointegrated": is_cointegrated,
+        "adf_p_s1": p1,
+        "adf_p_s2": p2,
+        "adf_p_residuals": p_res,
+        "beta": w1,
+        "intercept": w0
+    }
 
-        s1 = df[col1].astype(float)
-        s2 = df[col2].astype(float)
 
-        # Apply log transformation if requested
-        if self.use_log:
-            s1 = np.log(s1)
-            s2 = np.log(s2)
+def find_cointegrated_pairs(data, sector_name, tickers):
+    """
+    Find all cointegrated pairs within a sector
+    Returns list of (ticker1, ticker2, test_results) tuples
+    """
+    cointegrated_pairs = []
 
-        # Step 1: Check that both series are non-stationary (I(1))
-        p1 = adfuller(s1.values, regression="c", autolag="AIC")[1]
-        p2 = adfuller(s2.values, regression="c", autolag="AIC")[1]
+    # Test all possible pairs
+    pairs = list(combinations(tickers, 2))
+    print(f"\nTesting {len(pairs)} pairs in {sector_name}...")
 
-        # Step 2: Run OLS regression S1 = beta0 + beta1*S2 + residuals
-        X = sm.add_constant(s2.values)
-        model = sm.OLS(s1.values, X).fit()
-        beta0, beta1 = model.params
-        residuals = s1.values - (beta0 + beta1 * s2.values)
+    for ticker1, ticker2 in pairs:
+        if ticker1 not in data.columns or ticker2 not in data.columns:
+            continue
 
-        # Step 3: Test if residuals are stationary
-        p_res = adfuller(residuals, regression="n", autolag="AIC")[1]
+        df_pair = data[[ticker1, ticker2]].dropna()
+        if len(df_pair) < 100:  # Need sufficient data
+            continue
 
-        # Cointegration conditions
-        cond_nonstat = (p1 > self.alpha) and (p2 > self.alpha)
-        cond_res_stat = (p_res < self.alpha)
-        is_cointegrated = cond_nonstat and cond_res_stat
+        result = test_cointegration(df_pair[ticker1], df_pair[ticker2])
 
-        return {
-            "asset1": col1,
-            "asset2": col2,
-            "is_cointegrated": is_cointegrated,
-            "adf_p_asset1": p1,
-            "adf_p_asset2": p2,
-            "adf_p_residuals": p_res,
-            "beta0": beta0,
-            "beta1": beta1,
-            "r_squared": model.rsquared
-        }
+        if result["is_cointegrated"]:
+            cointegrated_pairs.append((ticker1, ticker2, result))
+            print(f"  ✓ Found: {ticker1} - {ticker2} (p-value: {result['adf_p_residuals']:.4f})")
 
-    def find_cointegrated_pairs(self, prices: pd.DataFrame, min_corr=0.7):
-        """
-        Find all cointegrated pairs in a dataset
+    return cointegrated_pairs
 
-        Args:
-            prices: DataFrame with multiple asset columns
-            min_corr: Minimum correlation threshold (pre-filter)
 
-        Returns:
-            List of cointegrated pairs with their statistics
-        """
-        assets = prices.columns.tolist()
-        n = len(assets)
-        results = []
+def find_all_cointegrated_pairs(data):
+    """
+    Find cointegrated pairs across all sectors
+    Returns dict: {sector: [(ticker1, ticker2, results), ...]}
+    """
+    all_pairs = {}
 
-        # Calculate correlation matrix for pre-filtering
-        corr_matrix = prices.corr()
+    for sector, tickers in SECTORS.items():
+        pairs = find_cointegrated_pairs(data, sector, tickers)
+        if pairs:
+            all_pairs[sector] = pairs
 
-        print(f"Searching for cointegrated pairs among {n} assets...")
-        print(f"Total pairs to test: {n * (n - 1) // 2}")
+    total = sum(len(pairs) for pairs in all_pairs.values())
+    print(f"\n{'=' * 60}")
+    print(f"Total cointegrated pairs found: {total}")
+    print(f"{'=' * 60}")
 
-        tested = 0
-        for i in range(n):
-            for j in range(i + 1, n):
-                # Pre-filter by correlation
-                if abs(corr_matrix.iloc[i, j]) < min_corr:
-                    continue
+    return all_pairs
 
-                asset1, asset2 = assets[i], assets[j]
-                pair_prices = prices[[asset1, asset2]]
 
-                result = self.test_pair(pair_prices)
-                tested += 1
+if __name__ == "__main__":
+    from data import download_data, get_all_tickers
 
-                if result["is_cointegrated"]:
-                    results.append(result)
-                    print(f"✓ Found: {asset1} - {asset2} (p-value: {result['adf_p_residuals']:.4f})")
+    tickers = get_all_tickers()
+    data = download_data(tickers)
+    pairs = find_all_cointegrated_pairs(data)
 
-        print(f"\nTested {tested} pairs with correlation > {min_corr}")
-        print(f"Found {len(results)} cointegrated pairs")
-
-        return results
+    for sector, pair_list in pairs.items():
+        print(f"\n{sector}: {len(pair_list)} pairs")
