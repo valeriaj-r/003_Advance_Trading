@@ -25,7 +25,7 @@ COINTEGRATION_ALPHA = 0.05
 USE_LOG_PRICES = True
 
 # Kalman Filter grid search parameters
-Q_VALUES = [1e-5, 5e-5, 1e-4]  # Process noise (smaller = more stable beta)
+Q_VALUES = [1e-5, 5e-5, 1e-4]  # Process noise (smaller = more stable beta, less changes in Beta over time)
 R_VALUES = [1e-2, 5e-2, 1e-1]  # Measurement noise (larger = trust observations less)
 
 # Z-score threshold grid search parameters
