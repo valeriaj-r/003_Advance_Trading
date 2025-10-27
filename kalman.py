@@ -137,8 +137,6 @@ class KalmanFilterSDP:
         Get current state St = {Rt, It, Bt}
 
         Returns:
-        --------
-        dict with:
         - beta (Rt): hedge ratio
         - spread (It): current spread
         - P (Bt): uncertainty

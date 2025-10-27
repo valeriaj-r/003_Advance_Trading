@@ -7,26 +7,7 @@ import matplotlib.pyplot as plt
 
 def plot_zscore_with_signals(dates, spread_history, trades, entry_threshold, exit_threshold,
                              ticker_A, ticker_B, window=30):
-    """
-    Plot z-score over time with entry/exit thresholds and trade signals
-
-    Parameters:
-    -----------
-    dates : array-like
-        Trading dates
-    spread_history : list
-        Spread values over time
-    trades : list
-        List of trade dictionaries
-    entry_threshold : float
-        Entry threshold for z-score
-    exit_threshold : float
-        Exit threshold for z-score
-    ticker_A, ticker_B : str
-        Asset tickers
-    window : int
-        Rolling window for z-score calculation
-    """
+ 
     # Calculate z-scores
     zscores = []
     for i in range(len(spread_history)):
@@ -253,30 +234,13 @@ def visualize_results(results, data, ticker_A, ticker_B, period_name, initial_ca
                       entry_threshold=None, exit_threshold=None):
     """
     Generate all visualizations for backtest results
-
-    Parameters:
-    -----------
-    results : dict
-        Backtest results
-    data : pd.DataFrame
-        Price data
-    ticker_A, ticker_B : str
-        Asset tickers
-    period_name : str
-        Name of the period (Train/Test/Validation)
-    initial_capital : float
-        Initial capital
-    entry_threshold : float, optional
-        Entry threshold for z-score plot
-    exit_threshold : float, optional
-        Exit threshold for z-score plot
     """
     if results is None:
         print(f"No results to visualize for {period_name}")
         return
 
     # Get dates - align with actual data length
-    # The spread_history starts from index 0 (after warm-up), so we need to match that
+    # The spread_history starts from index 0 
     start_idx = 30  # warm-up period
     end_idx = start_idx + len(results['portfolio_values'])
     dates = data.index[start_idx:end_idx]

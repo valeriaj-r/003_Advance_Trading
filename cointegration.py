@@ -10,11 +10,7 @@ from config import COINTEGRATION_ALPHA, USE_LOG_PRICES, SECTORS
 
 
 def test_cointegration(s1, s2, use_log=USE_LOG_PRICES, alpha=COINTEGRATION_ALPHA):
-    """
-    Test if two series are cointegrated using Engle-Granger method
-    Returns dict with test results and OLS parameters
-    """
-    # Use log prices if specified
+    
     if use_log:
         s1 = np.log(s1)
         s2 = np.log(s2)
@@ -78,7 +74,6 @@ def find_cointegrated_pairs(data, sector_name, tickers):
 def find_all_cointegrated_pairs(data):
     """
     Find cointegrated pairs across all sectors
-    Returns dict: {sector: [(ticker1, ticker2, results), ...]}
     """
     all_pairs = {}
 

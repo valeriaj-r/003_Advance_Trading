@@ -7,7 +7,6 @@ from config import START_DATE, END_DATE, TRAIN_RATIO, TEST_RATIO, SECTORS
 
 
 def download_data(tickers, start_date=START_DATE, end_date=END_DATE):
-    """Download historical price data from Yahoo Finance"""
     print(f"Downloading data for {len(tickers)} tickers from {start_date} to {end_date}...")
 
     data = yf.download(tickers, start=start_date, end=end_date, progress=False, auto_adjust=False)['Adj Close']
@@ -17,7 +16,7 @@ def download_data(tickers, start_date=START_DATE, end_date=END_DATE):
 
     # Handle missing data
     data = data.dropna(axis=1, how='all')  # Remove columns with all NaN
-    data = data.fillna(method='ffill').fillna(method='bfill')  # Forward/backward fill
+    data = data.fillna(method='ffill').fillna(method='bfill')  # Forward/backward fill, better than ignore those days
 
     print(f"Downloaded {len(data.columns)} valid tickers with {len(data)} days of data")
     return data
