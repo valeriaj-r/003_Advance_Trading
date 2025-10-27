@@ -7,26 +7,7 @@ import matplotlib.pyplot as plt
 
 def plot_zscore_with_signals(dates, spread_history, trades, entry_threshold, exit_threshold,
                              ticker_A, ticker_B, window=30):
-    """
-    Plot z-score over time with entry/exit thresholds and trade signals
-
-    Parameters:
-    -----------
-    dates : array-like
-        Trading dates
-    spread_history : list
-        Spread values over time
-    trades : list
-        List of trade dictionaries
-    entry_threshold : float
-        Entry threshold for z-score
-    exit_threshold : float
-        Exit threshold for z-score
-    ticker_A, ticker_B : str
-        Asset tickers
-    window : int
-        Rolling window for z-score calculation
-    """
+ 
     # Calculate z-scores
     zscores = []
     for i in range(len(spread_history)):
