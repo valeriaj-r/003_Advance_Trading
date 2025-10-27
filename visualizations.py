@@ -103,7 +103,7 @@ def plot_zscore_with_signals(dates, spread_history, trades, entry_threshold, exi
     # Formatting
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Z-Score', fontsize=12)
-    ax.set_title(f'Z-Score with Trading Signals: {ticker_A} - β×{ticker_B}',
+    ax.set_title(f'Z-Score with Trading Signals: {ticker_A} ×{ticker_B}',
                  fontsize=14, fontweight='bold')
     ax.legend(loc='best', fontsize=9)
     ax.grid(True, alpha=0.3)
@@ -140,7 +140,7 @@ def plot_spread_evolution(dates, spread_history, positions_history, ticker_A, ti
 
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Spread', fontsize=12)
-    ax.set_title(f'Spread Evolution: {ticker_A} - β×{ticker_B}', fontsize=14, fontweight='bold')
+    ax.set_title(f'Spread Evolution: {ticker_A} × {ticker_B}', fontsize=14, fontweight='bold')
     ax.legend(loc='best')
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
@@ -232,7 +232,7 @@ def plot_trade_statistics(trades):
         print("No completed trades to analyze")
         return None
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
     # Trade returns distribution
     ax1.hist(trade_returns, bins=20, color='purple', edgecolor='black', alpha=0.7)
