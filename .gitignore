@@ -39,9 +39,9 @@ wheels/
 data/
 
 # Output files
-*.png
-*.jpg
-*.pdf
+#*.png
+#*.jpg
+#*.pdf
 results/
 plots/
 
