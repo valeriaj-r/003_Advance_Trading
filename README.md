@@ -104,7 +104,7 @@ Edit config.py to modify:
 ## Outputs
 
 ### Visualizations
-1. *Z-Score with Trading Signals* ⭐ NEW!: Z-score over time with entry/exit thresholds and trade markers
+1. *Z-Score with Trading Signals* 
    - Red dashed lines: Entry thresholds (±entry_threshold)
    - Green dashed lines: Exit thresholds (±exit_threshold)
    - Green triangles (▲): LONG spread entries (z-score was LOW, expecting increase)
@@ -165,4 +165,5 @@ Jimena Argüelles Perez
 ## License
 
 Educational project - use at your own risk
+
 
